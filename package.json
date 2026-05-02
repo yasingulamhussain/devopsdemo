@@ -1,0 +1,12 @@
+{
+  "name": "counter-app-devops-demo",
+  "version": "1.0.0",
+  "description": "Counter app deployed via AWS DevOps pipeline",
+  "scripts": {
+    "test": "jest --verbose",
+    "build": "echo 'Static app - no build step required'"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}
