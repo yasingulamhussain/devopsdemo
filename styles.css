@@ -1,0 +1,62 @@
+/* Basic reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Center everything */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Container styling */
+.container {
+  text-align: center;
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Counter display */
+#counter {
+  font-size: 3rem;
+  margin: 20px 0;
+}
+
+/* Buttons */
+.buttons button {
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Individual button colors */
+#increase {
+  background-color: #4caf50;
+  color: white;
+}
+
+#decrease {
+  background-color: #f44336;
+  color: white;
+}
+
+#reset {
+  background-color: #555;
+  color: white;
+}
+
+/* Hover effect */
+button:hover {
+  opacity: 0.8;
+}
