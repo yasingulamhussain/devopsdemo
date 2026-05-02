@@ -8,13 +8,13 @@ phases:
     commands:
       - npm install
       - pip install --quiet semgrep
-      - curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64.tar.gz | tar -xz
+      - curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz | tar -xz || echo "Gitleaks download skipped"
 
   pre_build:
     commands:
       - npm test
       - semgrep --config auto . || true
-      - ./gitleaks detect --source . --no-banner --redact || true
+      - if [ -f ./gitleaks ]; then ./gitleaks detect --source . --no-banner --redact || true; else echo "Gitleaks not available, skipping"; fi
       - npm audit --omit=dev || true
 
   build:
