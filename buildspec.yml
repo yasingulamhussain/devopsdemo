@@ -1,0 +1,26 @@
+version: 0.2
+
+phases:
+
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - npm install
+      - pip install --quiet semgrep
+      - curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64.tar.gz | tar -xz
+
+  pre_build:
+    commands:
+      - npm test
+      - semgrep --config auto . || true
+      - ./gitleaks detect --source . --no-banner --redact || true
+      - npm audit --omit=dev || true
+
+  build:
+    commands:
+      - npm run build
+
+artifacts:
+  files:
+    - '**/*'
