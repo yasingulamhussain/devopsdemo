@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Counter App - EC2 Web Server Infrastructure
+
+Parameters:
+
+  LatestAmiId:
+    Description: Latest Amazon Linux 2 AMI from Parameter Store
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t3.micro
+    AllowedValues:
+      - t3.micro
+    ConstraintDescription: Must be t3.micro (free tier eligible in eu-north-1).
+
+  AllowedCIDR:
+    Description: IP range allowed to access the server (CIDR format)
+    Type: String
+    Default: 0.0.0.0/0
+    MinLength: '9'
+    MaxLength: '18'
+    AllowedPattern: '^(\d{1,3}\.){3}\d{1,3}\/\d{1,2}$'
+    ConstraintDescription: Must be a valid CIDR range e.g. 0.0.0.0/0
+
+  ProjectName:
+    Description: Tag applied to all resources
+    Type: String
+    Default: counter-app-devops
+
+  Environment:
+    Description: Deployment environment
+    Type: String
+    Default: demo
+    AllowedValues:
+      - demo
+      - staging
+      - production
+
+Resources:
+
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Counter App web server - allows HTTP and HTTPS inbound only
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref AllowedCIDR
+          Description: HTTP
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref AllowedCIDR
+          Description: HTTPS
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+
+  WebServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !Ref WebServerSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-webserver"
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: CloudFormation
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+          yum install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          yum install -y ruby wget
+          cd /home/ec2-user
+          wget https://aws-codedeploy-eu-north-1.s3.eu-north-1.amazonaws.com/latest/install
+          chmod +x ./install
+          ./install auto
+          systemctl enable codedeploy-agent
+          systemctl start codedeploy-agent
+
+Outputs:
+
+  WebsiteURL:
+    Description: Public URL of the web server
+    Value: !Join
+      - ''
+      - - 'http://'
+        - !GetAtt WebServer.PublicDnsName
+
+  InstanceId:
+    Description: EC2 Instance ID
+    Value: !Ref WebServer
+
+  SecurityGroupId:
+    Description: Security Group ID
+    Value: !Ref WebServerSecurityGroup
+
+  StackRegion:
+    Description: AWS region
+    Value: !Ref AWS::Region
